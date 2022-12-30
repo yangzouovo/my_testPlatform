@@ -1,0 +1,4 @@
+dist/
+__pycache__/
+migrations/
+db.sqlite3

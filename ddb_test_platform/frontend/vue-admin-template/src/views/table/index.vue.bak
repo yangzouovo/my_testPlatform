@@ -1,0 +1,97 @@
+<template>
+  <div class="hello">
+    <h1>{{ msg }}</h1>
+    <!-- show books list -->
+    <ul>
+      <li v-for="(book, index) in books" :key="index" style="display:block">
+        {{index}} {{book.name}}-{{book.author}}
+      </li>
+    </ul>
+    <!-- form to add a book -->
+    <form action="">
+      输入书名：<input type="text" placeholder="book name" v-model="inputBook.name"><br>
+      输入作者：<input type="text" placeholder="book author" v-model="inputBook.author"><br>
+    </form>
+    <button type="submit" @click="bookSubmit()">add</button>
+    <!-- form to delete a book -->
+    <form action="">
+      输入书名：<input type="text" placeholder="book name" v-model="deleteBook.name"><br>
+      输入作者：<input type="text" placeholder="book author" v-model="deleteBook.author"><br>
+    </form>
+    <button type="submit" @click="bookDelete()">delete</button>
+    <!-- form to update a book -->
+    <form action="">
+      输入原书名：<input type="text" placeholder="book name" v-model="updateBook.origin_name"><br>
+      输入更改后书名：<input type="text" placeholder="book name" v-model="updateBook.name"><br>
+      输入更改后作者：<input type="text" placeholder="book author" v-model="updateBook.author"><br>
+    </form>
+    <button type="submit" @click="bookUpdate()">update</button>
+  </div>
+</template>
+
+
+<script>
+import { getServerResults,insertList,updateList,deleteList } from '@/api/table'
+
+export default {
+  // name: 'HelloWorld',
+  data () {
+    return {
+      msg: 'Books menu',
+      // datas list data
+      books: [],
+      // book data in the form
+      inputBook: {
+        "name": "",
+        "author": "",
+      },
+      deleteBook: {
+        "name": "",
+        "author": "",
+      },
+      updateBook: {
+        "origin_name":"",
+        "name": "",
+        "author": "",
+      },
+      listLoading: true
+    }
+  },
+  // created: function () {
+  //   this.loadBooks()
+  // },
+  mounted(){
+    this.loadBooks()
+  },
+  methods: {
+    loadBooks() {
+      this.listLoading = true
+      getServerResults().then(response => {
+        console.log(response.data)
+        this.books = response.data
+        
+      },
+      this.listLoading = false)
+    },
+    bookSubmit () {
+      insertList(this.inputBook.name, this.inputBook.author).then(response => {
+        console.log(response)
+        this.loadBooks()
+      })
+    }, // add a book to backend when click the button
+    bookDelete () {
+      deleteList(this.deleteBook.name, this.deleteBook.author).then(response => {
+        console.log(response)
+        this.loadBooks()
+      })
+    }, // delete a book to backend when click the button
+    bookUpdate () {
+      updateList(this.updateBook.origin_name, this.updateBook.name, this.updateBook.author).then(response => {
+        console.log(response)
+        this.loadBooks()
+      })
+    }, // update a book to backend when click the button
+
+  },
+}
+</script> 

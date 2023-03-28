@@ -16,3 +16,7 @@ class PlugintestinfoConfig(AppConfig):
 class ServertestinfoConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'serverTestInfo'
+
+class ApijstestinfoConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apiJsTestInfo'

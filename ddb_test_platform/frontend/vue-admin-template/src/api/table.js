@@ -16,13 +16,13 @@ export function getServerInfo(id) {
   })
 }
 
-export function refreshServerResults(params) {
-  return request({
-    url: '/server/list/refresh',
-    method: 'get',
-    params
-  })
-}
+// export function refreshServerResults(params) {
+//   return request({
+//     url: '/server/list/refresh',
+//     method: 'get',
+//     params
+//   })
+// }
 
 export function getPluginResults(pflag,p,v,ps) {
   return request({
@@ -40,15 +40,6 @@ export function getPluginInfo(id) {
   })
 }
 
-export function refreshPluginResults(params) {
-  return request({
-    url: '/plugin/list/refresh',
-    method: 'get',
-    params
-  })
-}
-
-
 export function getApiCppResults(pflag, sv, av) {
   return request({
     url: '/cpp/list/',
@@ -62,14 +53,6 @@ export function getApiCppInfo(build_number) {
     url: '/cpp/list/getinfo',
     method: 'get',
     params:{'build_number':build_number}
-  })
-}
-
-export function refreshApiCppResults(params) {
-  return request({
-    url: '/cpp/list/refresh',
-    method: 'get',
-    params
   })
 }
 
@@ -90,11 +73,19 @@ export function getApiJavaInfo(build_number) {
   })
 }
 
-export function refreshApiJavaResults(params) {
+export function getApiJsResults(av) {
   return request({
-    url: '/java/list/refresh',
+    url: '/js/list/',
     method: 'get',
-    params
+    params:{'av':av}
+  })
+}
+
+export function getApiJsInfo(build_number) {
+  return request({
+    url: '/js/list/getinfo',
+    method: 'get',
+    params:{'build_number':build_number}
   })
 }
 

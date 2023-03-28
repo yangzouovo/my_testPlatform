@@ -20,13 +20,13 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 class UserProfileViewSet(BaseViewSet):
     serializer_class = UserProfileSerializer
-    queryset = UserProfile.objects.all().order_by('id')
     # for i in queryset:
     #     print(i.id,i.user.get_username(),i.avatar,i.role,i.user_id) 
         
     def list(self, request, *args, **kwargs):
         user = request.GET.get("username")
         serializer = None
+        queryset = UserProfile.objects.all().order_by('id')
         if user:
             for i in queryset:
                 if i.user.get_username() == user:

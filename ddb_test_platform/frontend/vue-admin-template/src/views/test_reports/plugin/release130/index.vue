@@ -4,7 +4,7 @@
       <el-row :gutter="20" style="margin-bottom:35px;" type="flex">
         <el-select v-model="filter_testType" filterable style="left:10px;" placeholder="筛选测试类型" clearable>
           <!-- <el-option label="全部" value= null></el-option> -->
-          <el-option v-for="(value, index) in testTypeset" :key="index" :value="value"></el-option>
+          <el-option v-for="(value, index) in testTypelist" :key="index" :value="value"></el-option>
         </el-select>
         <el-select v-model="filter_status" filterable style="margin-left: 30px;" placeholder="筛选测试状态" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
@@ -12,20 +12,20 @@
         </el-select>
         <el-select v-model="filter_testTime" filterable style="margin-left: 20px;" placeholder="筛选测试时间" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
-          <el-option v-for="(value, index) in testTimeset" :key="index" :value="value.substring(0, 10)"></el-option>
+          <el-option v-for="(value, index) in testTimelist" :key="index" :value="value"></el-option>
         </el-select>
         <el-select v-model="filter_version" filterable style="margin-left: 20px;" placeholder="筛选测试版本" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
-          <el-option v-for="(value, index) in versionset" :key="index" :value="value"></el-option>
+          <el-option v-for="(value, index) in versionlist" :key="index" :value="value"></el-option>
         </el-select>
 
-        <div style="display:inline-block;position:absolute;right:115px;">
+        <!-- <div style="display:inline-block;position:absolute;right:115px;">
           <el-tooltip class="item" effect="light" content="仅载入并展示最近1月内的报告数据" placement="left">
             <el-button type="primary" @click="refreshData()">
               重新载入数据
             </el-button>
           </el-tooltip>
-        </div>
+        </div> -->
       </el-row>
     </div>
     <el-table v-loading="listLoading" :data="filtedData.slice((currentPage - 1) * pagesize, currentPage * pagesize)"
@@ -107,9 +107,9 @@ export default {
       filter_version: '',
       list: [],
       // pagelist:[],
-      testTypeset: new Set(),
-      testTimeset: new Set(),
-      versionset: new Set(),
+      testTypelist: new Array(),
+      testTimelist: new Array(),
+      versionlist: new Array(),
       statusset: {
         '全部通过': 0,
         '需检查': 1,
@@ -132,6 +132,7 @@ export default {
       }).filter((item) => {
         return this.filter_status === null || this.filter_status === '' || item.status === this.statusset[this.filter_status]
       }).filter((item) => {
+        console.log(item.test_time)
         return this.filter_testTime === '' || item.test_time.includes(this.filter_testTime)
       }).filter((item) => {
         return this.filter_version === '' || item.version.includes(this.filter_version)
@@ -155,10 +156,20 @@ export default {
       this.listLoading = true
       getPluginResults(0, null, 'release130', null).then(response => {
         this.list = response.data
-        this.testTypeset = response.types
-        this.testTimeset = response.times
-        this.versionset = response.versions
-        // console.log(this.list[0])
+        var tmp1 = new Set();
+        var tmp2 = new Set();
+        for (var i=0;i<response.types.length;i++){
+          // console.log(response.types[i])
+          tmp1.add(response.types[i]);
+        }
+        this.testTypelist=Array.from(tmp1).sort();
+        for (var i=0;i<response.times.length;i++){
+          // console.log(response.times[i].split(' ')[0])
+          tmp2.add(response.times[i].split(' ')[0]);
+        }
+        this.testTimelist = Array.from(tmp2).sort().reverse()
+
+        this.versionlist = response.versions.sort()
         this.listLoading = false
       })
     },

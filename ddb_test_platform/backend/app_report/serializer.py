@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from app_report.models import ApiCppTable,ApiJavaTable,PluginTalbe,ServerTalbe
+from app_report.models import ApiCppTable,ApiJavaTable,PluginTalbe,ServerTalbe,ApiJsTable
 
 
 class ApiCppTableSerializer(serializers.ModelSerializer):
@@ -21,4 +21,9 @@ class PluginTalbeSerializer(serializers.ModelSerializer):
 class ServerTalbeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServerTalbe
+        fields = '__all__'
+
+class ApiJsTableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApiJsTable
         fields = '__all__'

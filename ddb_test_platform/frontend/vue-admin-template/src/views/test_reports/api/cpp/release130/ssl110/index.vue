@@ -12,13 +12,13 @@
         </el-select>
         <!-- 时间过滤框 -->
         <!-- <el-date-picker type="daterange" start-placeholder="起始时间" end-placeholder="结束时间"></el-date-picker> -->
-        <div style="display:inline-block;position:absolute;right:145px;">   
+        <!-- <div style="display:inline-block;position:absolute;right:145px;">   
           <el-tooltip class="item" effect="light" content="仅载入并展示最近1月内的报告数据" placement="left">
             <el-button type="primary" @click="refreshData()">
               重新载入数据
             </el-button>
           </el-tooltip>
-        </div>
+        </div> -->
       </el-row>
     </div>
     <el-table
@@ -39,20 +39,19 @@
                       align="center" 
                       label="构建编号" 
                       width="110" 
-                      sortable
                       >
         <template slot-scope="scope">
           {{ scope.row.build_number }}
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="本次测试时间" width="300">
+      <el-table-column align="center" prop="build_number" label="本次测试时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.test_time }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="server编译时间" width="300">
+      <el-table-column align="center" label="server编译时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.server_build_time }}</span>
@@ -110,7 +109,7 @@ export default {
       filter_status: null,
       filter_testTime:'',
       list: [],
-      testTimeset:new Set(),
+      testTimeset:new Array(),
       statusset:{'全部通过':0,
                   '需检查':1,
                   '不通过':2},
@@ -145,13 +144,14 @@ export default {
 
     fetchData() {
       this.listLoading = true
-      getApiCppResults(this.currentPage, 'ssl110', 'release130').then(response => {
+      getApiCppResults(0, 'ssl110', 'release130').then(response => {
         this.list=response.data
-        this.listLoading = false
+        var tmp=new Set()
         for(var i=0;i<response.data.length;i++){
-          this.testTimeset.add(response.data[i]['test_time'])
+          tmp.add(response.data[i]['test_time'])
         }
-
+        this.testTimeset = Array.from(tmp).sort().reverse()
+        this.listLoading = false
       })
     },
     refreshData() {

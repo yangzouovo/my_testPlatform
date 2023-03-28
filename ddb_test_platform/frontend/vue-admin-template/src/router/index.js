@@ -206,6 +206,21 @@ export const constantRoutes = [
               // },
             ]
           },
+          {
+            path: 'js',
+            component: () => import('@/views/test_reports/api/js'),
+            name: 'JavaScript',
+            meta: { title: 'JavaScript' },
+            children: [
+              {
+                path: 'master',
+                component: () => import('@/views/test_reports/api/js/master'),
+                name: 'master',
+                meta: { title: 'master' },
+                children:[]
+              },
+            ]
+          },
         ]
       }
     ]

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from app_report.models import ApiCppTable,ApiJavaTable,PluginTalbe,ServerTalbe   #导入模型类
+from app_report.models import ApiCppTable,ApiJavaTable,PluginTalbe,ServerTalbe,ApiJsTable   #导入模型类
 
 # Register your models here.
 
@@ -21,4 +21,4 @@ admin.site.register(ApiCppTable, ApiCppAdmin)
 admin.site.register(ApiJavaTable)
 admin.site.register(PluginTalbe)
 admin.site.register(ServerTalbe)
-
+admin.site.register(ApiJsTable)

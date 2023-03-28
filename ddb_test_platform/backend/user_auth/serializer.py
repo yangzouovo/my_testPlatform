@@ -25,7 +25,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.user.username
-    
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -46,7 +45,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             re_data = {'data': data, 'code': 20000, 'message': 'success'}
             return re_data
 
-        except Exception as e:
+        except:
             return {'data': None, 'code': 40004, 'message': 'invalid username or password'}
 
 

@@ -1,3 +1,5 @@
+# import sys
+# sys.path.append("/home/yzou/Desktop/my_testPlatform/ddb_test_platform/backend/")
 from utils.downloader import SFTPDownloader
 from utils.html_merge import merge_css_and_img_to_html
 from backend.settings import BASE_DIR
@@ -323,6 +325,76 @@ class ApiJavaParser(reportParser):
                 'status': status})
 
 
+class ApiJsParser(reportParser):
+
+    def parseData(self, remote_dir, file_type) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        dowloader = SFTPDownloader(self.host, self.port, self.user, self.passwd)
+        FilePath = dowloader.search_file(remote_dir, file_type)
+        tasks = [loop.create_task(self.parse(path, dowloader)) for path in FilePath]
+        loop.run_until_complete(asyncio.wait(tasks))
+        loop.close()
+        dowloader.close()
+
+    async def parse(self, path, dowloader):
+        version = path.split('/')[0]
+
+        build_number = re.findall("result_(.*?)_",path)[0]
+        server_build_time = re.findall("_.+_(.*?).html",path)[0]
+
+        remote_dir = "/hdd/hdd5/hzy/test_report/api/javascript/"
+        local_dir = f"{REPORT_SRC}/js/"
+        local_file = local_dir +"result_"+build_number+".html"
+        # print(build_number, server_build_time, local_dir,local_file)
+
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+            dowloader.download(remote_dir+path, local_file)
+        elif not os.path.exists(local_file):
+            dowloader.download(remote_dir+path, local_file)
+
+        test_time = ''
+        total_falied = ''
+        fails = 0
+
+        async with aiofiles.open(local_file,'r') as f:
+            f_info = await f.readlines()
+
+            for i in range(len(f_info)):
+                if '<div id="timestamp">Started:' in f_info[i]:
+                    test_time = re.findall("""\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d""",f_info[i])[0]
+                    total = re.findall("""<div class="summary-total">Tests \((.*?)\)</div>""",f_info[i])[0]
+                    fails = re.findall("""Tests.+<div class="summary-failed">(.*?) failed</div>""",f_info[i])[0]
+                    break
+
+            cur_time = datetime.datetime.now()
+            # 只获取最近一个月的测试报告
+            if(test_time != '' and cur_time > datetime.datetime.strptime(test_time[:10],"%Y-%m-%d") + datetime.timedelta(days=30)):
+                return
+
+            try:
+                fail_int = int(fails)
+                if fail_int > 0:
+                    status=2
+                elif fail_int == 0:
+                    status=0
+            except Exception:
+                status = 1
+            
+            total_falied = fails +'/' + total
+
+            self.serializedData.append({
+                'test_time': test_time,
+                'server_build_time': server_build_time,
+                'build_number': build_number,
+                'version': version,
+                'total_falied': total_falied,
+                'status': status})
+
+
 if __name__ == "__main__":
-    s=PluginParser('192.168.100.27',22,'yzou','DolphinDB123')
-    s.parseData("/hdd/hdd5/hzy/test_report/plugin/","txt")
+    s=ApiJsParser('192.168.100.27',22,'yzou','DolphinDB123')
+    s.parseData("/hdd/hdd5/hzy/test_report/api/javascript/","html")
+    print(s.getData())

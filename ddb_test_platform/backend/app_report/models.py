@@ -69,3 +69,19 @@ class ServerTalbe(models.Model):
         db_table = 'Server'        # 数据库表的名字
     def __str__(self):            
         return self.version    # test version
+
+class ApiJsTable(models.Model):
+    test_time = models.CharField(max_length=30,verbose_name='测试时间', blank=True, null=True)
+    server_build_time = models.CharField(max_length=30,verbose_name='server编译时间', blank=True, null=True)
+    build_number = models.CharField(max_length=30,verbose_name='jenkins构建序号', blank=True, null=True)
+    version = models.CharField(max_length=30,verbose_name='api_js版本', blank=True, null=True)
+    total_falied = models.CharField(max_length=30,verbose_name='总用例数/失败用例数', blank=True, null=True)
+    status = models.IntegerField(verbose_name='状态', blank=True, null=True)
+
+    # django web
+    class Meta:
+        verbose_name='api_js test summary'
+        verbose_name_plural=verbose_name    # 复数形式
+        db_table = 'ApiJs'        # 数据库表的名字
+    def __str__(self):
+        return self.version    # test version

@@ -8,13 +8,13 @@
         </el-select>
         <!-- 时间过滤框 -->
         <!-- <el-date-picker type="daterange" start-placeholder="起始时间" end-placeholder="结束时间"></el-date-picker> -->
-        <div style="display:inline-block;position:absolute;right:150px;">   
+        <!-- <div style="display:inline-block;position:absolute;right:150px;">   
           <el-tooltip class="item" effect="light" content="仅载入并展示最近1月内的报告数据" placement="left">
             <el-button type="primary" @click="refreshData()">
               重新载入数据
             </el-button>
           </el-tooltip>
-        </div>
+        </div> -->
       </el-row>
     </div>
     <el-table
@@ -31,19 +31,19 @@
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
-      <el-table-column align="center" label="构建编号" width="110" sortable>
+      <el-table-column prop="build_number" align="center" label="构建编号" width="110">
         <template slot-scope="scope">
           {{ scope.row.build_number }}
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="本次测试时间" width="300">
+      <el-table-column align="center" prop="test_time" label="本次测试时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.test_time }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="server编译时间" width="300">
+      <el-table-column align="center" label="server编译时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.server_build_time }}</span>

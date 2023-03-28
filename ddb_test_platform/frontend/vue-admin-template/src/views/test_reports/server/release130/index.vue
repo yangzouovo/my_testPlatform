@@ -1,44 +1,38 @@
 <template>
   <div class="app-container" id="release130">
     <div style="margin: 6px 0 10px 0;position: relative;">
-      <el-row :gutter="20" style="margin-bottom:35px;" type="flex" >
+      <el-row :gutter="20" style="margin-bottom:35px;" type="flex">
         <el-select v-model="filter_testType" filterable style="left:10px;" placeholder="筛选测试类型" clearable>
           <!-- <el-option label="全部" value= null></el-option> -->
           <el-option v-for="(value, index) in testTypeset" :key="index" :value="value"></el-option>
         </el-select>
         <el-select v-model="filter_status" filterable style="margin-left: 30px;" placeholder="筛选测试状态" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
-          <el-option v-for="(value, index) in statusset"  :key="value" :value="index"></el-option>
+          <el-option v-for="(value, index) in statusset" :key="value" :value="index"></el-option>
         </el-select>
         <el-select v-model="filter_testTime" filterable style="margin-left: 20px;" placeholder="筛选测试时间" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
-          <el-option v-for="(value, index) in testTimeset"  :key="index" :value="value.substring(0,10)"></el-option>
+          <el-option v-for="(value, index) in testTimeset" :key="index" :value="value.substring(0, 10)"></el-option>
         </el-select>
         <el-select v-model="filter_version" filterable style="margin-left: 20px;" placeholder="筛选测试版本" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
-          <el-option v-for="(value, index) in versionset"  :key="index" :value="value"></el-option>
+          <el-option v-for="(value, index) in versionset" :key="index" :value="value"></el-option>
         </el-select>
 
-        <div style="display:inline-block;position:absolute;right:105px;">   
+        <!-- <div style="display:inline-block;position:absolute;right:105px;">   
           <el-tooltip class="item" effect="light" content="仅载入并展示最近1月内的报告数据" placement="left">
             <el-button type="primary" @click="refreshData()">
               重新载入数据
             </el-button>
           </el-tooltip>
-        </div>
+        </div> -->
       </el-row>
     </div>
-    <el-table
-      v-loading="listLoading"
-      :data="filtedData.slice((currentPage - 1) * pagesize, currentPage * pagesize)"
-      element-loading-text="Loading"
-      border
-      fit
-      highlight-current-row
-    >
+    <el-table v-loading="listLoading" :data="filtedData.slice((currentPage - 1) * pagesize, currentPage * pagesize)"
+      element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column align="center" label="序号" width="95">
         <template slot-scope="scope">
-          {{ scope.$index+1 }}
+          {{ scope.$index + 1 }}
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
@@ -72,9 +66,9 @@
       <el-table-column class-name="status-col" label="测试状态" width="110" align="center">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status | statusFilter">
-            <div v-if="scope.row.status==0"> {{ "全部通过" }} </div> 
-            <div v-if="scope.row.status==1"> {{ "需检查" }} </div> 
-            <div v-if="scope.row.status==2"> {{ "不通过" }} </div> 
+            <div v-if="scope.row.status == 0"> {{ "全部通过" }} </div>
+            <div v-if="scope.row.status == 1"> {{ "需检查" }} </div>
+            <div v-if="scope.row.status == 2"> {{ "不通过" }} </div>
           </el-tag>
         </template>
       </el-table-column>
@@ -92,7 +86,7 @@
 </template>
 
 <script>
-import { getServerResults,refreshServerResults,getServerInfo } from '@/api/table'
+import { getServerResults, refreshServerResults, getServerInfo } from '@/api/table'
 
 export default {
   filters: {
@@ -107,18 +101,20 @@ export default {
   },
   data() {
     return {
-      filter_testType:'',
+      filter_testType: '',
       filter_status: null,
-      filter_testTime:'',
-      filter_version:'',
+      filter_testTime: '',
+      filter_version: '',
       list: [],
       // pagelist:[],
-      testTypeset:new Set(),
-      testTimeset:new Set(),
-      versionset:new Set(),
-      statusset:{'全部通过':0,
-                  '需检查':1,
-                  '不通过':2},
+      testTypeset: new Array(),
+      testTimeset: new Array(),
+      versionset: new Array(),
+      statusset: {
+        '全部通过': 0,
+        '需检查': 1,
+        '不通过': 2
+      },
       listLoading: true,
       // 分页
       currentPage: 1, //初始页
@@ -130,7 +126,7 @@ export default {
     // this.fetchPageData(this.currentPage,this.pagesize);
   },
   computed: {
-    filtedData () {
+    filtedData() {
       return this.list.filter((item) => {
         return this.filter_testType === '' || item.test_type === this.filter_testType
       }).filter((item) => {
@@ -157,13 +153,21 @@ export default {
     },
     fetchAllData() {
       this.listLoading = true
-      getServerResults(0, null, 'release130',null).then(response => {
+      getServerResults(0, null, 'release130', null).then(response => {
         this.list = response.data
-        this.total = response.count
-        this.testTypeset = response.types
-        this.testTimeset = response.times
-        this.versionset = response.versions
-        // console.log(this.list[0])
+        var tmp1 = new Set()
+        var tmp2 = new Set()
+        for (var i = 0; i < response.types.length; i++) {
+          // console.log(response.types[i])
+          tmp1.add(response.types[i])
+        }
+        this.testTypeset = Array.from(tmp1).sort()
+        for (var i = 0; i < response.times.length; i++) {
+          // console.log(response.times[i].split(' ')[0])
+          tmp2.add(response.times[i].split(' ')[0])
+        }
+        this.testTimeset = Array.from(tmp2).sort().reverse()
+        this.versionset = response.versions.sort()
         this.listLoading = false
       })
     },
@@ -178,22 +182,22 @@ export default {
     refreshData() {
       this.listLoading = true
       refreshServerResults().then(response => {
-          // console.log(response)
-          if(response.code == 20000){
-            this.list = []
-            this.fetchAllData()
-          } 
-      this.listLoading = false
+        // console.log(response)
+        if (response.code == 20000) {
+          this.list = []
+          this.fetchAllData()
+        }
+        this.listLoading = false
       })
     },
-    getInfoMsg(id){
-      getServerInfo(id).then(response =>{
+    getInfoMsg(id) {
+      getServerInfo(id).then(response => {
         // let str = response.data
         // let strData = new Blob([str], { type: 'text/plain;charset=utf-8' });
         // saveAs(strData, "info.txt");
         const text = response.data.replace(/(\n|\r|\r\n|↵)/g, '<br/>')
-        var html = '<body><form action="" method="post">'+text+'</form></body>';
-        var newwindow = window.open('', "_blank","toolbar=yes, location=yes, directories=no, status=no, menubar=yes, scrollbars=yes, resizable=no, copyhistory=yes, width=1000, height=800");
+        var html = '<body><form action="" method="post">' + text + '</form></body>';
+        var newwindow = window.open('', "_blank", "toolbar=yes, location=yes, directories=no, status=no, menubar=yes, scrollbars=yes, resizable=no, copyhistory=yes, width=1000, height=800");
         newwindow.document.write(html);
         newwindow.moveTo(500, 200);
         newwindow.document.close()

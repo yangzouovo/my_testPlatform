@@ -8,11 +8,11 @@
           </el-select>
           <!-- 时间过滤框 -->
           <!-- <el-date-picker type="daterange" start-placeholder="起始时间" end-placeholder="结束时间"></el-date-picker> -->
-          <div style="display:inline-block;position:absolute;right:58px;">   
+          <!-- <div style="display:inline-block;position:absolute;right:58px;">   
             <el-button type="primary" @click="refreshData()">
               重新载入数据
               </el-button>  
-          </div>
+          </div> -->
         </el-row>
       </div>
       <el-table

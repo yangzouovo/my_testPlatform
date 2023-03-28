@@ -1,24 +1,19 @@
 <template>
-  <div class="app-container" id="release130">
+  <div class="app-container" id="master">
     <div style="margin: 6px 0 10px 0;position: relative;">
       <el-row :gutter="20" style="margin-bottom:35px;" type="flex" >
-        <el-select v-model="filter_status" filterable style="margin-left: 10px;" placeholder="筛选测试状态" clearable>
+        <el-select v-model="filter_status" style="margin-left: 10px;" placeholder="筛选测试状态" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
-          <el-option v-for="(value, index) in statusset" :key="value" :value="index"></el-option>
+          <el-option v-for="(value, index) in statusset"  :key="value" :value="index"></el-option>
         </el-select>
         <el-select v-model="filter_testTime" filterable style="margin-left: 20px;" placeholder="筛选测试时间" clearable>
           <!-- <el-option label="全部" value= ''></el-option> -->
-          <el-option v-for="(value, index) in testTimeset"  :key="index" :value="value.substring(0,10)"></el-option>
+          <el-option v-for="(value, index) in testTimelist" :key="index" :value="value"></el-option>
         </el-select>
-        <!-- 时间过滤框 -->
-        <!-- <el-date-picker type="daterange" start-placeholder="起始时间" end-placeholder="结束时间"></el-date-picker> -->
-        <!-- <div style="display:inline-block;position:absolute;right:145px;">   
-          <el-tooltip class="item" effect="light" content="仅载入并展示最近1月内的报告数据" placement="left">
-            <el-button type="primary" @click="refreshData()">
-              重新载入数据
-            </el-button>
-          </el-tooltip>
-        </div> -->
+        <el-select v-model="filter_version" filterable style="margin-left: 20px;" placeholder="筛选测试版本" clearable>
+          <!-- <el-option label="全部" value= ''></el-option> -->
+          <el-option v-for="(value, index) in versionlist" :key="index" :value="value"></el-option>
+        </el-select>
       </el-row>
     </div>
     <el-table
@@ -35,23 +30,19 @@
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
-      <el-table-column prop="build_number" 
-                      align="center" 
-                      label="构建编号" 
-                      width="110" 
-                      >
+      <el-table-column prop="build_number" align="center" label="构建编号" width="110">
         <template slot-scope="scope">
           {{ scope.row.build_number }}
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="build_number" label="本次测试时间" width="300">
+      <el-table-column align="center" prop="test_time" label="本次测试时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.test_time }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="server编译时间" width="300">
+      <el-table-column align="center" prop="created_at" label="server编译时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.server_build_time }}</span>
@@ -78,7 +69,7 @@
       </el-table-column>
       <el-table-column prop="goid1" label="详细信息" align="center">
         <template slot-scope="scope">
-          <el-button type="primary" icon="el-icon-search" @click="getInfoMsg(scope.row.build_number)">点击查看</el-button>
+          <el-button type="primary" @click="getInfoMsg(scope.row.build_number)">点击查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -86,12 +77,11 @@
       @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[5, 10, 20, 40]"
       :page-size="pagesize" layout="total, sizes, prev, pager, next, jumper" :total="filtedData.length">
     </el-pagination>
-
   </div>
 </template>
 
 <script>
-import { getApiCppResults,refreshApiCppResults,getApiCppInfo } from '@/api/table'
+import { getApiJsResults,refreshApiJsResults,getApiJsInfo } from '@/api/table'
 
 export default {
   filters: {
@@ -107,9 +97,13 @@ export default {
   data() {
     return {
       filter_status: null,
-      filter_testTime:'',
+      filter_testTime: '',
+      filter_version: '',
       list: [],
-      testTimeset:new Array(),
+      // pagelist:[],
+      testTypelist: new Array(),
+      testTimelist: new Array(),
+      versionlist: new Set(),
       statusset:{'全部通过':0,
                   '需检查':1,
                   '不通过':2},
@@ -128,35 +122,46 @@ export default {
         return this.filter_status === null || this.filter_status === '' || item.status === this.statusset[this.filter_status]
       }).filter((item) => {
         return this.filter_testTime === '' || item.test_time.includes(this.filter_testTime)
+      }).filter((item) => {
+        return this.filter_version === '' || item.version.includes(this.filter_version)
       })
     }
   },
+
   methods: {
-    // 初始页currentPage、初始每页数据数pagesize和数据data
     handleSizeChange: function (size) {
       this.pagesize = size;
       // console.log(this.pagesize); //每页下拉显示数据
+      // this.pagelist = [];
+      // this.fetchPageData(this.currentPage,this.pagesize);
     },
     handleCurrentChange: function (currentPage) {
       this.currentPage = currentPage;
       // console.log(this.currentPage); //点击第几页
+      // this.pagelist = [];
+      // this.fetchPageData(this.currentPage,this.pagesize);
     },
-
     fetchData() {
       this.listLoading = true
-      getApiCppResults(0, 'ssl102', 'release130').then(response => {
+      getApiJsResults('master').then(response => {
         this.list=response.data
-        var tmp=new Set()
-        for(var i=0;i<response.data.length;i++){
-          tmp.add(response.data[i]['test_time'])
+        var tmp1 = new Set();
+        var tmp2 = new Set();
+        // console.log(response.data[0].test_time)
+        for (var i=0;i<response.data.length;i++){
+          console.log(response.data[i].test_time.split(' ')[0])
+          tmp2.add(response.data[i].test_time.split(' ')[0]);
+          tmp1.add(response.data[i].version)
         }
-        this.testTimeset = Array.from(tmp).sort().reverse()
+        this.testTimelist = Array.from(tmp2).sort().reverse()
+
+        this.versionlist = Array.from(tmp1).sort()
         this.listLoading = false
       })
     },
     refreshData() {
       this.listLoading = true
-      refreshApiCppResults().then(response => {
+      refreshApiJsResults().then(response => {
           // console.log(response)
           if(response.code == 20000){
             this.list = []
@@ -166,7 +171,7 @@ export default {
       })
     },
     getInfoMsg(build_number){
-      getApiCppInfo(build_number).then(response =>{
+      getApiJsInfo(build_number).then(response =>{
         // let str = response.data
         // let strData = new Blob([str], { type: 'text/plain;charset=utf-8' });
         // saveAs(strData, "info.txt");

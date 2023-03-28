@@ -2,22 +2,24 @@
   <div class="app-container" id="release200">
     <div style="margin: 6px 0 10px 0;position: relative;">
       <el-row :gutter="20" style="margin-bottom:35px;" type="flex" >
-        <el-select v-model="filter_status" style="margin-left: 20px;" placeholder="筛选测试状态" clearable>
-          <el-option label="全部" value= ''></el-option>
+        <el-select v-model="filter_status" style="margin-left: 10px;" placeholder="筛选测试状态" clearable>
+          <!-- <el-option label="全部" value= ''></el-option> -->
           <el-option v-for="(value, index) in statusset"  :key="value" :value="index"></el-option>
         </el-select>
         <!-- 时间过滤框 -->
         <!-- <el-date-picker type="daterange" start-placeholder="起始时间" end-placeholder="结束时间"></el-date-picker> -->
-        <div style="display:inline-block;position:absolute;right:215px;">   
-          <el-button type="primary" @click="refreshData()">
-            重新载入数据
-            </el-button>  
-        </div>
+        <!-- <div style="display:inline-block;position:absolute;right:150px;">   
+          <el-tooltip class="item" effect="light" content="仅载入并展示最近1月内的报告数据" placement="left">
+            <el-button type="primary" @click="refreshData()">
+              重新载入数据
+            </el-button>
+          </el-tooltip>
+        </div> -->
       </el-row>
     </div>
     <el-table
       v-loading="listLoading"
-      :data="filtedData"
+      :data="filtedData.slice((currentPage - 1) * pagesize, currentPage * pagesize)"
       element-loading-text="Loading"
       border
       fit
@@ -29,25 +31,25 @@
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
-      <el-table-column align="center" label="构建编号" width="110" sortable>
+      <el-table-column prop="build_number" align="center" label="构建编号" width="110">
         <template slot-scope="scope">
           {{ scope.row.build_number }}
           <!-- <span style="color: #007bff">{{scope.$index+1}}</span> -->
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="本次测试时间" width="300">
+      <el-table-column align="center" prop="test_time" label="本次测试时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.test_time }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="server编译时间" width="300">
+      <el-table-column align="center" label="server编译时间" width="300">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.server_build_time }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="api版本" width="100" align="center">
+      <el-table-column label="api版本" width="150" align="center">
         <template slot-scope="scope">
           {{ scope.row.version }}
         </template>
@@ -57,7 +59,7 @@
           {{ scope.row.total_falied }}
         </template>
       </el-table-column>
-      <el-table-column class-name="status-col" label="测试状态" width="100" align="center">
+      <el-table-column class-name="status-col" label="测试状态" width="150" align="center">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status | statusFilter">
             <div v-if="scope.row.status==0"> {{ "全部通过" }} </div> 
@@ -72,6 +74,10 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination style="margin: 20px 0px" background @size-change="handleSizeChange"
+      @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[5, 10, 20, 40]"
+      :page-size="pagesize" layout="total, sizes, prev, pager, next, jumper" :total="filtedData.length">
+    </el-pagination>
   </div>
 </template>
 
@@ -98,7 +104,10 @@ export default {
       statusset:{'全部通过':0,
                   '需检查':1,
                   '不通过':2},
-      listLoading: true
+      listLoading: true,
+      // 分页
+      currentPage: 1, //初始页
+      pagesize: 10, //    每页的数据
     }
   },
   created() {
@@ -113,18 +122,27 @@ export default {
       })
     }
   },
+
   methods: {
+    handleSizeChange: function (size) {
+      this.pagesize = size;
+      // console.log(this.pagesize); //每页下拉显示数据
+      // this.pagelist = [];
+      // this.fetchPageData(this.currentPage,this.pagesize);
+    },
+    handleCurrentChange: function (currentPage) {
+      this.currentPage = currentPage;
+      // console.log(this.currentPage); //点击第几页
+      // this.pagelist = [];
+      // this.fetchPageData(this.currentPage,this.pagesize);
+    },
     fetchData() {
       this.listLoading = true
-      getApiJavaResults().then(response => {
-        // this.list = response.data.filter(version => version == 'release200')
+      getApiJavaResults('release200').then(response => {
+        this.list=response.data
         for (var i=0; i<response.data.length; i++){
           // console.log(response.data[i])
-          if(response.data[i]['version'] == 'release200'){
-            this.list.push(response.data[i])
-            this.testTypeset.add(response.data[i]['test_type'])
-            // this.statusset.add(response.data[i]['status'])
-          }
+          this.testTypeset.add(response.data[i]['test_type'])
         }
         console.log(this.list[0])
         this.listLoading = false

@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'books',
     'app_report',
-    'user_auth'
+    'user_auth',
+    'django_apscheduler' # 定时执行任务
 ]
 
 MIDDLEWARE = [
@@ -142,3 +143,5 @@ STATICFILES_DIRS = [
 ]
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'None'
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
